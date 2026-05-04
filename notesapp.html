@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Notes</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43);
+    color: white;
+}
+
+/* Top bar */
+.top {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+}
+
+.back {
+    cursor: pointer;
+}
+
+/* Container */
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* Input */
+.input-box {
+    background: #1c1c2e;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+input, textarea, select {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 6px;
+    border: none;
+}
+
+button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.add {
+    background: #4caf50;
+    color: white;
+}
+
+/* Search */
+.search {
+    margin-bottom: 15px;
+}
+
+/* Notes grid */
+.notes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+/* Note */
+.note {
+    padding: 12px;
+    border-radius: 10px;
+    position: relative;
+    color: black;
+}
+
+/* Colors */
+.yellow { background: #fff59d; }
+.blue { background: #90caf9; }
+.green { background: #a5d6a7; }
+.pink { background: #f48fb1; }
+
+/* Pin */
+.pin {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    cursor: pointer;
+}
+
+/* Actions */
+.actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.actions button {
+    background: transparent;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top">
+    <div class="back" onclick="goHome()">⬅ Home</div>
+    <h2>📝 Notes</h2>
+</div>
+
+<div class="container">
+
+    <!-- Input -->
+    <div class="input-box">
+        <input id="title" placeholder="Title">
+        <textarea id="content" placeholder="Write your note..."></textarea>
+
+        <select id="color">
+            <option value="yellow">Yellow</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="pink">Pink</option>
+        </select>
+
+        <button class="add" onclick="addNote()">Add Note</button>
+    </div>
+
+    <!-- Search -->
+    <input id="search" class="search" placeholder="Search notes..." oninput="render()">
+
+    <!-- Notes -->
+    <div id="notes" class="notes"></div>
+
+</div>
+
+<script>
+let notes = JSON.parse(localStorage.getItem("notes")) || [];
+
+function save(){
+    localStorage.setItem("notes", JSON.stringify(notes));
+}
+
+function addNote(){
+    const title = document.getElementById("title").value;
+    const content = document.getElementById("content").value;
+    const color = document.getElementById("color").value;
+
+    if(!title && !content) return;
+
+    notes.push({title, content, color, pinned:false});
+    clearInputs();
+    save();
+    render();
+}
+
+function clearInputs(){
+    document.getElementById("title").value = "";
+    document.getElementById("content").value = "";
+}
+
+/* Delete */
+function deleteNote(i){
+    notes.splice(i,1);
+    save();
+    render();
+}
+
+/* Pin */
+function togglePin(i){
+    notes[i].pinned = !notes[i].pinned;
+    save();
+    render();
+}
+
+/* Edit */
+function editNote(i){
+    const newTitle = prompt("Edit title:", notes[i].title);
+    const newContent = prompt("Edit content:", notes[i].content);
+
+    if(newTitle !== null) notes[i].title = newTitle;
+    if(newContent !== null) notes[i].content = newContent;
+
+    save();
+    render();
+}
+
+/* Render */
+function render(){
+    const container = document.getElementById("notes");
+    const search = document.getElementById("search").value.toLowerCase();
+
+    container.innerHTML = "";
+
+    // Pinned first
+    let sorted = [...notes].sort((a,b)=>b.pinned - a.pinned);
+
+    sorted.forEach((note, i) => {
+        if(
+            note.title.toLowerCase().includes(search) ||
+            note.content.toLowerCase().includes(search)
+        ){
+            const div = document.createElement("div");
+            div.className = `note ${note.color}`;
+
+            div.innerHTML = `
+                <strong>${note.title}</strong>
+                <p>${note.content}</p>
+
+                <div class="pin" onclick="togglePin(${i})">
+                    ${note.pinned ? "📌" : "📍"}
+                </div>
+
+                <div class="actions">
+                    <button onclick="editNote(${i})">✏️</button>
+                    <button onclick="deleteNote(${i})">🗑️</button>
+                </div>
+            `;
+
+            container.appendChild(div);
+        }
+    });
+}
+
+/* Load */
+render();
+
+/* Home */
+function goHome(){
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
