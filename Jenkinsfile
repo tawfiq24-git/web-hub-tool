@@ -12,16 +12,20 @@ pipeline {
             steps {
                 sh '''
                     test -f index.html
-                    test -f style.css -o -f styles.css
-                    test -f script.js -o -f app.js
-                    echo "Website files found successfully!"
+                    test -f calculator.html
+                    test -f calendar.html
+                    test -f digitalclock.html
+                    test -f notesapp.html
+                    test -f todo.html
+
+                    echo "All HTML application files found!"
                 '''
             }
         }
 
         stage('Build Complete') {
             steps {
-                echo 'HTML, CSS and JavaScript project is ready!'
+                echo 'Web Hub Tool validation completed successfully!'
             }
         }
     }
