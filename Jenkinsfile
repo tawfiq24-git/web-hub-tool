@@ -17,15 +17,30 @@ pipeline {
                     test -f digitalclock.html
                     test -f notesapp.html
                     test -f todo.html
+                    test -f Dockerfile
+
 
                     echo "All HTML application files found!"
                 '''
             }
         }
 
-        stage('Build Complete') {
+         stage('Build Docker Image') {
             steps {
-                echo 'Web Hub Tool validation completed successfully!'
+                sh 'docker build -t web-hub-tool:latest .'
+            }
+        }
+
+        stage('Deploy Website') {
+            steps {
+                sh '''
+                    docker rm -f web-hub-tool || true
+                    docker run -d \
+                        --name web-hub-tool \
+                        --restart unless-stopped \
+                        -p 8081:80 \
+                        web-hub-tool:latest
+                '''
             }
         }
     }
